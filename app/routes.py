@@ -7,15 +7,16 @@ bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
 @bp.route("/humidity-sensor", methods=["GET"])
 def get_all_humidity_sensor():
-    data = HumiditySensor.query.all()
-    return jsonify(data), 200
+    result = HumiditySensor.query.all()
+    return jsonify([r.to_dict() for r in result]), 200
 
 @bp.route("/humidity-sensor/<int:humidity_sensor_id>", methods=["GET"])
 def get_humidity_sensor(humidity_sensor_id):
-    data = HumiditySensor.query.get(humidity_sensor_id)
-    return jsonify(data) if data else {"error":"Not found"}
+    result = HumiditySensor.query.get(humidity_sensor_id)
+    status_code = 200 if result else 404
+    response = result.to_dict() if result else {"error":"Not found"}
+    return jsonify(response), status_code
 
-# POST
 @bp.route("/humidity-sensor", methods=["POST"])
 def create_humidity_sensor():
     data = request.json
