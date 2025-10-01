@@ -1,10 +1,5 @@
-# humidity_sensor = [
-#     {"id": 1, "name": "Plant 1", "humidity": "223", "created_at": "2018-01-01 00:00:00" },
-#     {"id": 2, "name": "Plant 2", "humidity": "323", "created_at": "2018-02-01 00:00:00" },
-# ]
-
 from datetime import datetime
-from .extensions import db
+from .db import db
 
 
 class HumiditySensor(db.Model):
