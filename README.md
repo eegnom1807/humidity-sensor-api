@@ -13,3 +13,6 @@ https://github.com/eegnom1807/humidity-sensor-api.git
 - flask --app run.py db init     # just one time
 - flask --app run.py db migrate -m "create sensor table"
 - flask --app run.py db upgrade
+
+## Run app locally:
+- python run.py after create th env environment and install the dependencies
