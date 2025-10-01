@@ -1,5 +1,5 @@
 from datetime import datetime
-from .extensions import db
+from .db import db
 
 
 class HumiditySensor(db.Model):

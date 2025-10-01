@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from .models import HumiditySensor
-from .extensions import db
+from .db import db
 
-bp = Blueprint("api", __name__, url_prefix="/api/v1")
+bp = Blueprint("api", __name__)
 
 
 @bp.route("/humidity-sensor", methods=["GET"])
