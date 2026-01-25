@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from .models import Plant
+from .utils import get_date
 from .db import db
 
 bp = Blueprint("api", __name__)
@@ -12,9 +13,11 @@ def get_all_plants():
 
     for row in data:
         plants.append({
-            'id': row.id,
-            'name': row.name,
-            'species': row.species
+            "id": row.id,
+            "name": row.name,
+            "species": row.species,
+            "created_at": get_date(row.created_at),
+            "updated_at": get_date(row.updated_at)
         })
 
     return jsonify(plants), 200
@@ -47,7 +50,9 @@ def get_plant_by_id(id):
     plant = {
         "id": data.id,
         "name": data.name,
-        "species": data.species
+        "species": data.species,
+        "created_at": get_date(data.created_at),
+        "updated_at": get_date(data.updated_at)
     }
 
     return jsonify(plant), 200
