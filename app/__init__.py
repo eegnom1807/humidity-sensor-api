@@ -1,6 +1,7 @@
 from flask import Flask
 from .db import db, migrate
 from .routes import bp
+from . import models
 import os
 
 
@@ -8,7 +9,7 @@ def create_app():
     app = Flask(__name__)
 
     # SQLite config
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///humidity_sensor.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///plants_humidity_data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     #initialize DB and migrations
