@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from .models import Plant
+from .models import Plant, HumidityReading
 from .utils import get_date
 from .db import db
 
@@ -92,3 +92,41 @@ def delete_plant(id):
     
     return {}, 200
         
+@bp.route("/plants/<int:id>/readings", methods=["POST"])
+def add_plant_reading(id):
+    data = request.json
+    plant = Plant.get_by_id(id)
+    if plant is None:
+        error = {"message":  "Not Found"}
+        return error, 404
+    
+    plant_reading = HumidityReading(
+        plant_id=plant.id,
+        humidity=data["humidity"],
+        source=data["source"]
+    )
+
+    try:
+        db.session.add(plant_reading)
+        db.session.commit()
+    except:
+        error = {"message": "Conflict"}
+        return error, 409
+    
+    message = {"message": "Created"}
+    return jsonify(message), 201
+
+@bp.route("/plants/<int:id>/readings", methods=["GET"])
+def get_last_plant_reading_by_id(id):
+    data = HumidityReading.get_last_row_by_id(id)
+    if data is None:
+        error = {"message":  "Not Found"}
+        return error, 404
+    
+    plant_reading = {
+        "plant_id": data.plant_id,
+        "humidity": data.humidity,
+        "source": data.source
+    }
+
+    return jsonify(plant_reading), 200
