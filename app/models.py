@@ -54,3 +54,12 @@ class HumidityReading(db.Model):
 
     # reverse relation
     plant = db.relationship("Plant", back_populates="humidity_readings")
+
+    @classmethod
+    def get_last_row_by_id(cls, id):
+        return (
+            cls.query
+            .filter_by(plant_id=id)
+            .order_by(cls.created_at.desc())
+            .first()
+        )
