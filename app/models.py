@@ -5,6 +5,10 @@ from .db import db
 class Plant(db.Model):
     __tablename__ = "plants"
 
+    __table_args__ = (
+        db.UniqueConstraint("name", name="uq_plants_name"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     species = db.Column(db.String(100), nullable=False)
