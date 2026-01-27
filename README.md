@@ -16,3 +16,6 @@ https://github.com/eegnom1807/humidity-sensor-api.git
 
 ## Run app locally:
 - python run.py after create th env environment and install the dependencies
+
+## Freeze dependencies when add a new one:
+- pip freeze > requirements.txt
