@@ -37,9 +37,12 @@ class HumidityReading(db.Model):
 
         query = (
             db.session.query(
-                Plant,
+                Plant.id,
+                Plant.name,
+                Plant.image_url,
+                Plant.active,
                 HumidityReading.humidity,
-                HumidityReading.created_at
+                HumidityReading.created_at.label("last_reading"),
             )
             .outerjoin(Sensor, Sensor.plant_id == Plant.id)
             .outerjoin(
@@ -51,6 +54,7 @@ class HumidityReading(db.Model):
                 (HumidityReading.sensor_id == Sensor.id) &
                 (HumidityReading.created_at == subquery.c.last_reading)
             )
+            .order_by(Plant.name)
         )
 
-        return query
+        return query.all()

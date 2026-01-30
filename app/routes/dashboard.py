@@ -7,16 +7,16 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/plants/dashboard", methods=["GET"])
 def plants_dashboard():
-    
-    result = []
-    for plant, humidity, last_reading in HumidityReading.query.all():
-        result.append({
-            "id": plant.id,
-            "name": plant.name,
-            "image_url": plant.image_url,
-            "active": plant.active,
-            "humidity": humidity,
-            "last_reading": last_reading
+    readings = []
+    data = HumidityReading.get_plants_readings()
+    for row in data:
+        readings.append({
+            "id": row.id,
+            "name": row.name,
+            "image_url": row.image_url,
+            "active": row.active,
+            "humidity": row.humidity,
+            "last_reading": row.last_reading
         })
     
-    return jsonify(result), 200
+    return jsonify(readings), 200
