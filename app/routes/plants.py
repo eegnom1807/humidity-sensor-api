@@ -31,8 +31,7 @@ def add_plant():
     
     plant = Plant(
         name=data["name"],
-        image_url=data["image_url"],
-        active=data["active"]
+        image_url=data["image_url"]
     )
 
     try:
@@ -74,7 +73,6 @@ def update_plant(id):
     new_data = request.json
     plant.name = new_data["name"]
     plant.image_url = new_data["image_url"]
-    plant.active = new_data["active"]
 
     try:
         db.session.commit()
