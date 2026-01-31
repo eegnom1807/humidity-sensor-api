@@ -3,6 +3,7 @@ from .db import db, migrate
 from .routes import register_routes
 from . import models
 from flask_cors import CORS
+from app.extensions import ma
 import os
 
 
@@ -12,6 +13,8 @@ def create_app():
     # SQLite config
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///plants_humidity_data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # upload files config
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     app.config["UPLOAD_FOLDER"] = os.path.join(
         BASE_DIR,
@@ -23,13 +26,15 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    #init Marshmallow for validation
+    ma.init_app(app)
+
     # cors config
     origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
     methods = os.getenv("METHODS", "GET,POST,PUT,DELETE").split(",")
     CORS(app, resources={r"/api/*": {"origins": origins, "methods": methods}})
 
     # register routes
-    #app.register_blueprint(bp, url_prefix=os.getenv("API_PREFIX", "/api/v1"))
     register_routes(app, os.getenv("API_PREFIX", "/api/v1"))
 
     # serves uploaded files
