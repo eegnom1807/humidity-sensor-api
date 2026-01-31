@@ -49,7 +49,7 @@ def get_sensor_by_id(id):
         return {"message":  "Sensor not found"}, 404
     
     message = {"data": sensor_schema.dump(sensor)}
-    return jsonify(sensor), 200
+    return jsonify(message), 200
 
 @sensors_bp.route("/sensors/<int:id>", methods=["PUT"])
 def update_sensor(id):
