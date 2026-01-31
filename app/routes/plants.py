@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
+from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
+from app.schemas.plant_schema import plant_schema, plants_schema
 from ..models import Plant
 from ..utils import get_date, allowed_file
 from ..db import db
@@ -10,28 +12,25 @@ plants_bp = Blueprint("plants", __name__)
 
 @plants_bp.route("/plants", methods=["GET"])
 def get_all_plants():
-    plants = []
-    data = Plant.get_all()
+    plants = Plant.get_all()
 
-    for row in data:
-        plants.append({
-            "id": row.id,
-            "name": row.name,
-            "image_url": row.image_url,
-            "active": row.active,
-            "created_at": get_date(row.created_at),
-            "updated_at": get_date(row.updated_at)
-        })
-
-    return jsonify(plants), 200
+    message = {"data": plants_schema.dump(plants)}
+    return jsonify(message), 200
 
 @plants_bp.route("/plants", methods=["POST"])
 def add_plant():
-    data = request.json
+    request_data = request.json
+    if not request_data:
+        return {"message": "No input data"}, 400
+    
+    try:
+        validated_data = plant_schema.load(request_data)
+    except ValidationError as err:
+        return {"message": err.messages}, 422
     
     plant = Plant(
-        name=data["name"],
-        image_url=data["image_url"]
+        name=validated_data["name"],
+        image_url=validated_data["image_url"]
     )
 
     try:
@@ -42,37 +41,35 @@ def add_plant():
         error = {"message": "Conflict"}
         return error, 409
     
-    message = {"message": "Created"}
+    message = {"message": "Plant created", "data": plant_schema.dump(plant)}
     return jsonify(message), 201
 
 @plants_bp.route("/plants/<int:id>", methods=["GET"])
 def get_plant_by_id(id):
-    data = Plant.get_by_id(id)
-    if data is None:
-        error = {"message":  "Not Found"}
-        return error, 404
-    
-    plant = {
-        "id": data.id,
-        "name": data.name,
-        "image_url": data.image_url,
-        "active": data.active,
-        "created_at": get_date(data.created_at),
-        "updated_at": get_date(data.updated_at)
-    }
+    plant = Plant.get_by_id(id)
+    if plant is None:
+        return {"message":  "Plant not found"}, 404
 
-    return jsonify(plant), 200
+    message = {"data": plant_schema.dump(plant)}
+    return jsonify(message), 200
 
 @plants_bp.route("/plants/<int:id>", methods=["PUT"])
 def update_plant(id):
     plant = Plant.get_by_id(id)
     if plant is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+        return {"message":  "Plant not found"}, 404
     
-    new_data = request.json
-    plant.name = new_data["name"]
-    plant.image_url = new_data["image_url"]
+    request_data = request.json
+    if not request_data:
+        return {"message": "No input data"}, 400
+
+    try:
+        validated_data = plant_schema.load(request_data)
+    except ValidationError as err:
+        return {"message": err.messages}, 422
+    
+    plant.name = validated_data["name"]
+    plant.image_url = validated_data["image_url"]
 
     try:
         db.session.commit()
@@ -87,8 +84,7 @@ def update_plant(id):
 def delete_plant(id):
     plant = Plant.get_by_id(id)
     if plant is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+        return {"message":  "Plant not found"}, 404
 
     try:
         db.session.delete(plant)
@@ -104,21 +100,17 @@ def delete_plant(id):
 def upload_image(id):
     plant = Plant.get_by_id(id)
     if plant is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+        return {"message":  "Plant not found"}, 404
 
     if "image_url" not in request.files:
-        error = {"message":  "photo file is required"}
-        return error, 400
+        return {"message":  "Photo file is required"}, 400
 
     file = request.files["image_url"]
     if file.filename == "":
-        error = {"message":  "Empty filename"}
-        return error, 400
+        return {"message":  "Empty filename"}, 400
 
     if not allowed_file(file.filename):
-        error = {"message":  "invalid file type"}
-        return error, 400
+        return {"message":  "Invalid file type"}, 400
 
     filename = secure_filename(file.filename)
     ext = filename.rsplit(".", 1)[1].lower()
@@ -137,6 +129,6 @@ def upload_image(id):
     db.session.commit()
 
     return jsonify({
-        "status": "ok",
+        "message": "Ok",
         "image_url": plant.image_url
     })

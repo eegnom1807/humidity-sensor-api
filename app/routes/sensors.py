@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify, request
+from marshmallow import ValidationError
+from app.schemas.sensor_schema import sensor_schema, sensors_schema
 from ..models import Sensor
 from ..utils import get_date
 from ..db import db
@@ -8,27 +10,25 @@ sensors_bp = Blueprint("sensors", __name__)
 
 @sensors_bp.route("/sensors", methods=["GET"])
 def get_all_sensors():
-    sensors = []
-    data = Sensor.get_all()
+    sensors = Sensor.get_all()
 
-    for row in data:
-        sensors.append({
-            "id": row.id,
-            "pin": row.pin,
-            "plant_id": row.plant_id,
-            "created_at": get_date(row.created_at),
-            "updated_at": get_date(row.updated_at)
-        })
-
-    return jsonify(sensors), 200
+    message = {"data": sensors_schema.dump(sensors)}
+    return jsonify(message), 200
 
 @sensors_bp.route("/sensors", methods=["POST"])
 def add_sensor():
-    data = request.json
+    request_data = request.json
+    if not request_data:
+        return {"message": "No input data"}, 400
+    
+    try:
+        validated_data = sensor_schema.load(request_data)
+    except ValidationError as err:
+        return {"message": err.messages}, 422
     
     sensor = Sensor(
-        pin=data["pin"],
-        plant_id=data["plant_id"]
+        pin=validated_data["pin"],
+        plant_id=validated_data["plant_id"]
     )
 
     try:
@@ -39,36 +39,35 @@ def add_sensor():
         error = {"message": "Conflict"}
         return error, 409
     
-    message = {"message": "Created"}
+    message = {"message": "Sensor created", "data": sensor_schema.dump(sensor)}
     return jsonify(message), 201
 
 @sensors_bp.route("/sensors/<int:id>", methods=["GET"])
 def get_sensor_by_id(id):
-    data = Sensor.get_by_id(id)
-    if data is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+    sensor = Sensor.get_by_id(id)
+    if sensor is None:
+        return {"message":  "Sensor not found"}, 404
     
-    sensor = {
-        "id": data.id,
-        "pin": data.pin,
-        "plant_id": data.plant_id,
-        "created_at": get_date(data.created_at),
-        "updated_at": get_date(data.updated_at)
-    }
-
+    message = {"data": sensor_schema.dump(sensor)}
     return jsonify(sensor), 200
 
 @sensors_bp.route("/sensors/<int:id>", methods=["PUT"])
 def update_sensor(id):
     sensor = Sensor.get_by_id(id)
     if sensor is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+        return {"message":  "Sensor not found"}, 404
     
-    new_data = request.json
-    sensor.pin = new_data["pin"]
-    sensor.plant_id = new_data["plant_id"]
+    request_data = request.json
+    if not request_data:
+        return {"message": "No input data"}, 400
+    
+    try:
+        validated_data = sensor_schema.load(request_data)
+    except ValidationError as err:
+        return {"message": err.messages}, 422
+
+    sensor.pin = validated_data["pin"]
+    sensor.plant_id = validated_data["plant_id"]
 
     try:
         db.session.commit()
@@ -83,8 +82,7 @@ def update_sensor(id):
 def delete_sensor(id):
     sensor = Sensor.get_by_id(id)
     if sensor is None:
-        error = {"message":  "Not Found"}
-        return error, 404
+        return {"message":  "Sensor not found"}, 404
 
     try:
         db.session.delete(sensor)
