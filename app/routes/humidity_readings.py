@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from ..models import HumidityReading, Sensor
 from ..utils import require_api_key
+from marshmallow import ValidationError
+from app.schemas.reading_schema import reading_schema
 from ..db import db
 
 readings_bp = Blueprint("readings", __name__)
@@ -10,28 +12,30 @@ readings_bp = Blueprint("readings", __name__)
 def create_reading():
     require_api_key()
 
-    data = request.json
-    pin = data["pin"]
-    humidity = data["humidity"]
-    if pin is None or humidity is None:
-        return {"error": "pin and humidity required"}, 400
+    request_data = request.json
+    if not request_data:
+        return {"message": "No input data"}, 400
+    
+    try:
+        validated_data = reading_schema.load(request_data)
+    except ValidationError as err:
+        return {"message": err.messages}, 422
 
-    sensor = Sensor.get_by_pin(pin)
+    sensor = Sensor.get_by_pin(validated_data["pin"])
     if not sensor:
         return {"error": "Sensor not found"}, 404
 
     reading = HumidityReading(
         sensor_id=sensor.id,
-        humidity=humidity
+        humidity=validated_data["humidity"]
     )
 
     db.session.add(reading)
-
     # active plant
     if not sensor.plant.active:
         sensor.plant.active = True
-
+    
     db.session.commit()
 
-    message = {"status": "ok"}
+    message = {"message": "Reading created", "data": reading_schema.dump(reading)}
     return jsonify(message), 201
