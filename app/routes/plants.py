@@ -73,6 +73,9 @@ def update_plant(id):
     except ValidationError as err:
         return {"message": err.messages}, 422
     
+    if plant.image_url != validated_data["image_url"]:
+        delete_file_if_exists(plant.image_url)
+    
     plant.name = validated_data["name"]
     plant.image_url = validated_data["image_url"]
 

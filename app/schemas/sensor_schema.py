@@ -1,6 +1,7 @@
 from ..extensions import ma
 from marshmallow import fields, validate, validates, ValidationError
 from ..models.plant import Plant
+from ..utils import get_date
 
 
 class SensorSchema(ma.Schema):
@@ -10,6 +11,10 @@ class SensorSchema(ma.Schema):
         validate=validate.Length(min=2, max=10)
     )
     plant_id = fields.Int(required=True)
+    updated_at = fields.Method("format_updated_at")
+
+    def format_updated_at(self, obj):
+        return get_date(obj.updated_at)
 
     @validates("plant_id")
     def validate_plant_exists(self, value, **kwargs):
