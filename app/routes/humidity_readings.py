@@ -9,9 +9,8 @@ readings_bp = Blueprint("readings", __name__)
 
 
 @readings_bp.route("/readings", methods=["POST"])
+@require_api_key
 def create_reading():
-    require_api_key()
-
     request_data = request.json
     if not request_data:
         return {"message": "No input data"}, 400

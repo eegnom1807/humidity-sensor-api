@@ -1,6 +1,7 @@
 import os
 from flask import request, abort
 from datetime import timezone, timedelta
+from functools import wraps
 
 
 def get_date(date):
@@ -31,7 +32,13 @@ def delete_file_if_exists(relative_path):
     if os.path.exists(full_path):
         os.remove(full_path)
 
-def require_api_key():
-    api_key = request.headers.get("X-API-KEY")
-    if not api_key or api_key != os.getenv("API_KEY"):
-        abort(401, description="Invalid API key")
+def require_api_key(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        api_key = request.headers.get("X-API-KEY")
+        if not api_key or api_key != os.getenv("API_KEY"):
+            return {"message": "Invalid API key"}, 401
+        
+        return f(*args, **kwargs)
+    
+    return wrapper
