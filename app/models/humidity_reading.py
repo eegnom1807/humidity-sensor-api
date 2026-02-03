@@ -57,4 +57,4 @@ class HumidityReading(db.Model):
             .order_by(Plant.name)
         )
 
-        return query.all()
+        return [dict(row._mapping) for row in query.all()]
