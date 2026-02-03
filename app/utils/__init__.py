@@ -2,11 +2,12 @@ import os
 from flask import request, abort
 from datetime import timezone, timedelta
 
-GMT_6 = timezone(timedelta(hours=-6))
-
 
 def get_date(date):
-    return str(date.replace(tzinfo=timezone.utc).astimezone(GMT_6))
+    time_zone = timezone(timedelta(hours=-6))
+    new_date = date.replace(tzinfo=timezone.utc).astimezone(time_zone)
+
+    return new_date.strftime("%Y-%m-%d %H:%M:%S")
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
