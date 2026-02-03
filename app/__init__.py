@@ -21,6 +21,8 @@ def create_app():
         "..",
         os.getenv("UPLOAD_FOLDER", "uploads")
     )
+    max_mb = int(os.getenv("MAX_CONTENT_LENGTH_MB", 5))
+    app.config["MAX_CONTENT_LENGTH_MB"] = max_mb * 1024 * 1024
 
     #initialize DB and migrations
     db.init_app(app)
