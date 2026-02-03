@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
-from app.schemas.plant_schema import plant_schema, plants_schema
+from ..schemas.plant_schema import plant_schema, plants_schema
 from ..models import Plant
 from ..utils import get_date, allowed_file
 from ..db import db

@@ -1,4 +1,4 @@
-from app.extensions import ma
+from ..extensions import ma
 from marshmallow import fields, validate
 
 

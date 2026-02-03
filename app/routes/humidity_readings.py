@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from ..models import HumidityReading, Sensor
 from ..utils import require_api_key
 from marshmallow import ValidationError
-from app.schemas.reading_schema import reading_schema
+from ..schemas.reading_schema import reading_schema
 from ..db import db
 
 readings_bp = Blueprint("readings", __name__)

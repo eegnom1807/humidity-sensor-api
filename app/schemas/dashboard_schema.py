@@ -1,6 +1,6 @@
-from app.extensions import ma
+from ..extensions import ma
 from marshmallow import fields
-from app.utils import get_date
+from ..utils import get_date
 
 
 class DashboardSchema(ma.Schema):
