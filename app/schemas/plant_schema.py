@@ -1,5 +1,6 @@
 from ..extensions import ma
 from marshmallow import fields, validate
+from ..utils import get_date
 
 
 class PlantSchema(ma.Schema):
@@ -13,6 +14,10 @@ class PlantSchema(ma.Schema):
         validate=validate.Length(min=0, max=255)
     )
     active = fields.Bool(required=False)
+    updated_at = fields.Method("format_updated_at")
+
+    def format_updated_at(self, obj):
+        return get_date(obj.updated_at)
 
 plant_schema = PlantSchema()
 plants_schema = PlantSchema(many=True)
