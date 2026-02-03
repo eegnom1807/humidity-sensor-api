@@ -3,7 +3,9 @@ from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
 from ..schemas.plant_schema import plant_schema, plants_schema
 from ..models import Plant
-from ..utils import get_date, allowed_file
+from ..utils import allowed_file
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from ..utils.errors_handler import handle_db_error
 from ..db import db
 import os
 
@@ -36,10 +38,13 @@ def add_plant():
     try:
         db.session.add(plant)
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message": "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     message = {"message": "Plant created", "data": plant_schema.dump(plant)}
     return jsonify(message), 201
@@ -73,10 +78,13 @@ def update_plant(id):
 
     try:
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message":  "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     return {}, 204
 
@@ -89,10 +97,13 @@ def delete_plant(id):
     try:
         db.session.delete(plant)
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message":  "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     return {}, 200
 
@@ -129,6 +140,6 @@ def upload_image(id):
     db.session.commit()
 
     return jsonify({
-        "message": "Ok",
+        "message": "Uploaded file",
         "image_url": plant.image_url
     })
