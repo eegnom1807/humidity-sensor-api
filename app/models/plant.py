@@ -1,4 +1,6 @@
 from sqlalchemy.sql import func
+from sqlalchemy import event
+from ..utils import delete_file_if_exists
 from ..db import db
 
 
@@ -36,3 +38,7 @@ class Plant(db.Model):
     @classmethod
     def get_by_id(cls, id):
         return cls.query.get(id)
+    
+@event.listens_for(Plant, "after_delete")
+def delete_plant_image(mapper, connection, target):
+    delete_file_if_exists(target.image_url)

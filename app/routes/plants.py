@@ -3,7 +3,7 @@ from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
 from ..schemas.plant_schema import plant_schema, plants_schema
 from ..models import Plant
-from ..utils import allowed_file
+from ..utils import allowed_file, delete_file_if_exists
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from ..utils.errors_handler import handle_db_error
 from ..db import db
@@ -122,6 +122,11 @@ def upload_image(id):
 
     if not allowed_file(file.filename):
         return {"message":  "Invalid file type"}, 400
+    
+    if request.content_length is not None and request.content_length > current_app.config["MAX_CONTENT_LENGTH_MB"]:
+        return {"message": "File too large. Max size is 5MB"}, 413
+    
+    delete_file_if_exists(plant.image_url)
 
     filename = secure_filename(file.filename)
     ext = filename.rsplit(".", 1)[1].lower()
