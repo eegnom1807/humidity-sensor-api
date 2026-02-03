@@ -3,6 +3,8 @@ from marshmallow import ValidationError
 from ..schemas.sensor_schema import sensor_schema, sensors_schema
 from ..models import Sensor
 from ..utils import get_date
+from ..utils.errors_handler import handle_db_error
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from ..db import db
 
 sensors_bp = Blueprint("sensors", __name__)
@@ -34,10 +36,13 @@ def add_sensor():
     try:
         db.session.add(sensor)
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message": "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     message = {"message": "Sensor created", "data": sensor_schema.dump(sensor)}
     return jsonify(message), 201
@@ -71,10 +76,13 @@ def update_sensor(id):
 
     try:
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message":  "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     return {}, 204
 
@@ -87,9 +95,12 @@ def delete_sensor(id):
     try:
         db.session.delete(sensor)
         db.session.commit()
-    except:
+    except IntegrityError as e:
         db.session.rollback()
-        error = {"message":  "Conflict"}
-        return error, 409
+        return handle_db_error(e)
+    
+    except SQLAlchemyError:
+        db.session.rollback()
+        return {"message": "Internal server error"}, 500
     
     return {}, 200
