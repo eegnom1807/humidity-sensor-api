@@ -1,6 +1,6 @@
-from app.extensions import ma
+from ..extensions import ma
 from marshmallow import fields, validate, validates, ValidationError
-from app.models.plant import Plant
+from ..models.plant import Plant
 
 
 class SensorSchema(ma.Schema):

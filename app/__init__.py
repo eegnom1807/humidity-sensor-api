@@ -3,7 +3,7 @@ from .db import db, migrate
 from .routes import register_routes
 from . import models
 from flask_cors import CORS
-from app.extensions import ma
+from .extensions import ma
 import os
 
 
