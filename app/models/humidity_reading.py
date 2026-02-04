@@ -42,6 +42,7 @@ class HumidityReading(db.Model):
                 Plant.image_url,
                 Plant.active,
                 HumidityReading.humidity,
+                Sensor.pin,
                 HumidityReading.created_at.label("last_reading"),
             )
             .outerjoin(Sensor, Sensor.plant_id == Plant.id)

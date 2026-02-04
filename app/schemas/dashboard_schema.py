@@ -9,6 +9,7 @@ class DashboardSchema(ma.Schema):
     image_url = fields.Str()
     active = fields.Bool()
     humidity = fields.Float()
+    pin = fields.Str()
     last_reading = fields.Method("format_last_reading")
 
     def format_last_reading(self, obj):
