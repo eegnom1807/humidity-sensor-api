@@ -17,5 +17,5 @@ marshmallow-sqlalchemy==1.5.0
 python-dotenv==1.2.2
 SQLAlchemy==2.0.50
 tomli==2.4.1
-typing_extensions==4.15.0
+typing_extensions==4.16.0
 Werkzeug==3.1.8
